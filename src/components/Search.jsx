@@ -37,6 +37,7 @@ export const Search = ({
     shouldStayOpen = false,
     shouldDestroyOnClose = true,
     shouldHideMenu = false,
+    minChars = 0,
     ...rest
 }) => {
     const [showShortcutKey, setShowShortcutKey] = useState(true);
@@ -123,7 +124,7 @@ export const Search = ({
 
     // Show dropdown only when `isOpen` is set to `true` and there are items in the list.
     const open = (isOpen || !canClose || shouldStayOpen) && itemList.length > 0 && !shouldHideMenu;
-    const noResultFound = open && !isLoading && itemList.length <= 1;
+    const noResultFound = open && !isLoading && itemList.length <= 1 && inputValue.length >= minChars;
 
     // Keyboard shortcuts.
     useHotkeys(isOSX ? "cmd+k" : "ctrl+k", (event) => {
@@ -183,11 +184,28 @@ export const Search = ({
                     ? itemList.map((item, index) => (
                           <li key={item} {...getItemProps({ key: index, item, index, className: "ui-search-item" })}>
                               {item === submitValueItem ? (
-                                  isLoading ? (
-                                      <div className="p-3 text-center">
-                                          <Spinner size="small" />
+                                  <>
+                                      <div
+                                          className={clsx(
+                                              "cursor-pointer p-2",
+                                              highlightedIndex === index ? "bg-blue-light text-white" : "",
+                                          )}
+                                      >
+                                          {inputValue.length >= minChars ? (
+                                              <>
+                                                  Show all results for <strong>{inputValue}</strong>
+                                              </>
+                                          ) : (
+                                              `Enter at least ${minChars} characters to begin search`
+                                          )}
                                       </div>
-                                  ) : null
+
+                                      {isLoading ? ( 
+                                          <div className="p-3 text-center">
+                                              <Spinner size="small" />
+                                          </div>
+                                      ) : null}
+                                  </>
                               ) : (
                                   children?.(item, highlightedIndex === index)
                               )}
